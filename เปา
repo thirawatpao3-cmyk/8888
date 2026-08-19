@@ -1,0 +1,145 @@
+-- สร้าง UI หน้าต่างเปลี่ยนเพลง Tool (เอฟเฟกต์สีรุ้ง + ขาวดำ + คลิกขวาปิด UI + กันเจาะเปาสุดหล่อ)
+local player = game.Players.LocalPlayer
+local playerGui = player:WaitForChild("PlayerGui")
+
+-- ป้องกันซ้ำ ลบอันเก่าทิ้งก่อนถ้ามี
+if playerGui:FindFirstChild("ToolMusicUI_RainbowBW") then
+    playerGui.ToolMusicUI_RainbowBW:Destroy()
+end
+
+local screenGui = Instance.new("ScreenGui")
+screenGui.Name = "ToolMusicUI_RainbowBW"
+screenGui.Parent = playerGui
+
+-- กรอบหลัก (Main Frame) - สีขาว
+local frame = Instance.new("Frame")
+frame.Size = UDim2.new(0, 260, 0, 180)
+frame.Position = UDim2.new(0.5, -130, 0.4, -90)
+frame.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+frame.BorderSizePixel = 0
+frame.Active = true
+frame.Draggable = true
+frame.Parent = screenGui
+
+local corner = Instance.new("UICorner")
+corner.CornerRadius = UDim.new(0, 10)
+corner.Parent = frame
+
+-- หัวข้อ (เครดิต กันเจาะเปาสุดหล่อ + สีรุ้งกระพริบ)
+local title = Instance.new("TextLabel")
+title.Size = UDim2.new(1, 0, 0, 35)
+title.BackgroundTransparency = 1
+title.Text = "🎵 กันเจาะเปาสุดหล่อ"
+title.TextColor3 = Color3.fromRGB(0, 0, 0)
+title.TextSize = 14
+title.Font = Enum.Font.GothamBold
+title.Parent = frame
+
+-- ช่องใส่ ID เพลง (TextBox - พื้นดำ ตัวหนังสือขาว)
+local textBox = Instance.new("TextBox")
+textBox.Size = UDim2.new(0, 220, 0, 35)
+textBox.Position = UDim2.new(0.5, -110, 0, 45)
+textBox.PlaceholderText = "ใส่ ID เพลงที่นี่..."
+textBox.Text = "136928868616177"
+textBox.TextColor3 = Color3.fromRGB(255, 255, 255)
+textBox.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+textBox.TextSize = 14
+textBox.Font = Enum.Font.Gotham
+textBox.Parent = frame
+
+local boxCorner = Instance.new("UICorner")
+boxCorner.CornerRadius = UDim.new(0, 6)
+boxCorner.Parent = textBox
+
+-- ปุ่มกดเปิดเพลง (Button - พื้นดำ ตัวหนังสือขาว)
+local button = Instance.new("TextButton")
+button.Size = UDim2.new(0, 220, 0, 35)
+button.Position = UDim2.new(0.5, -110, 0, 88)
+button.Text = "🎶 เปิดเพลงใน Tool"
+button.TextColor3 = Color3.fromRGB(255, 255, 255)
+button.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+button.TextSize = 14
+button.Font = Enum.Font.GothamBold
+button.Parent = frame
+
+local btnCorner = Instance.new("UICorner")
+btnCorner.CornerRadius = UDim.new(0, 6)
+btnCorner.Parent = button
+
+-- ข้อความสถานะด้านล่าง
+local statusLabel = Instance.new("TextLabel")
+statusLabel.Size = UDim2.new(0, 220, 0, 25)
+statusLabel.Position = UDim2.new(0.5, -110, 0, 133)
+statusLabel.BackgroundColor3 = Color3.fromRGB(230, 230, 230)
+statusLabel.Text = "🌈 Rainbow Mode Active"
+statusLabel.TextColor3 = Color3.fromRGB(0, 0, 0)
+statusLabel.TextSize = 12
+statusLabel.Font = Enum.Font.GothamBold
+statusLabel.Parent = frame
+
+local statusCorner = Instance.new("UICorner")
+statusCorner.CornerRadius = UDim.new(0, 6)
+statusCorner.Parent = statusLabel
+
+-- ปุ่ม Toggle (ปุ่มเปิด-ปิดหน้าต่าง แบบลากเลื่อนได้ + เอฟเฟกต์สีรุ้งวิ่งตามแบบในภาพ)
+local toggleBtn = Instance.new("TextButton")
+toggleBtn.Size = UDim2.new(0, 45, 0, 45)
+toggleBtn.Position = UDim2.new(0, 50, 0, 50)
+toggleBtn.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+toggleBtn.TextColor3 = Color3.fromRGB(0, 0, 0)
+toggleBtn.Text = "UI"
+toggleBtn.TextSize = 14
+toggleBtn.Font = Enum.Font.GothamBold
+toggleBtn.Active = true
+toggleBtn.Draggable = true
+toggleBtn.Parent = screenGui
+
+local toggleCorner = Instance.new("UICorner")
+toggleCorner.CornerRadius = UDim.new(1, 0)
+toggleCorner.Parent = toggleBtn
+
+-- ระบบเปลี่ยนสีรุ้งให้อัตโนมัติ (วิ่งวนลูปสี RGB)
+task.spawn(function()
+    while screenGui and screenGui.Parent do
+        for i = 0, 1, 0.005 do
+            if not screenGui or not screenGui.Parent then break end
+            local rainbowColor = Color3.fromHSV(i, 1, 1)
+            toggleBtn.BackgroundColor3 = rainbowColor
+            task.wait(0.03)
+        end
+    end
+end)
+
+-- สถานะเปิดปิดหน้าต่าง
+local isOpen = true
+
+-- คลิกซ้าย = เปิด/ปิดหน้าต่างหลัก
+toggleBtn.MouseButton1Click:Connect(function()
+    isOpen = not isOpen
+    frame.Visible = isOpen
+end)
+
+-- คลิกขวา = ลบ UI ทิ้งทันที (ตามแบบในภาพตัวอย่างที่คุณส่งมา)
+toggleBtn.MouseButton2Click:Connect(function()
+    screenGui:Destroy()
+end)
+
+-- ระบบสั่งการเมื่อกดปุ่มเล่นเพลง
+button.MouseButton1Click:Connect(function()
+    local songId = textBox.Text
+    if songId ~= "" then
+        local args = {
+            "ToolMusicText",
+            songId,
+            [4] = true
+        }
+        game:GetService("ReplicatedStorage"):WaitForChild("RE"):WaitForChild("PlayerToolEvent"):FireServer(unpack(args))
+        statusLabel.Text = "✅ ส่งเพลงสำเร็จ!"
+        task.wait(1)
+        statusLabel.Text = "🌈 Rainbow Mode Active"
+    else
+        textBox.PlaceholderText = "โปรดใส่ ID เพลงก่อน!"
+    end
+end)
+
+print("🌈 Music Rainbow UI (Black & White Theme) Loaded!")
