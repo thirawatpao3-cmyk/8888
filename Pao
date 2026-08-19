@@ -1,0 +1,98 @@
+-- สร้าง UI หน้าต่างเปลี่ยนเพลง Tool (ธีมดาร์ก + ขอบเรืองแสงสีรุ้งตามคลิป + ลบปุ่ม UI)
+local player = game.Players.LocalPlayer
+local playerGui = player:WaitForChild("PlayerGui")
+
+if playerGui:FindFirstChild("ToolMusicUI_RainbowBorder") then
+    playerGui.ToolMusicUI_RainbowBorder:Destroy()
+end
+
+local screenGui = Instance.new("ScreenGui")
+screenGui.Name = "ToolMusicUI_RainbowBorder"
+screenGui.Parent = playerGui
+
+-- กรอบหลัก (Main Frame - ธีมดาร์ก)
+local frame = Instance.new("Frame")
+frame.Size = UDim2.new(0, 300, 0, 180)
+frame.Position = UDim2.new(0.5, -150, 0.4, -90)
+frame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+frame.BorderSizePixel = 0
+frame.Active = true
+frame.Draggable = true
+frame.Parent = screenGui
+
+-- เพิ่มขอบเรืองแสง (UIStroke)
+local stroke = Instance.new("UIStroke")
+stroke.Thickness = 3
+stroke.Parent = frame
+
+local corner = Instance.new("UICorner")
+corner.CornerRadius = UDim.new(0, 15)
+corner.Parent = frame
+
+-- หัวข้อ (เครดิต กันเจาะเปาสุดหล่อ)
+local title = Instance.new("TextLabel")
+title.Size = UDim2.new(1, 0, 0, 40)
+title.BackgroundTransparency = 1
+title.Text = "🎵 กันเจาะเปาสุดหล่อ"
+title.TextColor3 = Color3.fromRGB(255, 255, 255)
+title.TextSize = 16
+title.Font = Enum.Font.GothamBold
+title.Parent = frame
+
+-- ช่องใส่ ID เพลง (ธีมมืด พร้อมระบบคำว่า "ช่องใส่เพลง" หายไปตอนพิมพ์)
+local textBox = Instance.new("TextBox")
+textBox.Size = UDim2.new(0, 260, 0, 40)
+textBox.Position = UDim2.new(0.5, -130, 0, 60)
+textBox.PlaceholderText = "ช่องใส่เพลง"
+textBox.Text = ""
+textBox.TextColor3 = Color3.fromRGB(255, 255, 255)
+textBox.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+textBox.TextSize = 14
+textBox.Font = Enum.Font.Gotham
+textBox.Parent = frame
+
+local boxCorner = Instance.new("UICorner")
+boxCorner.CornerRadius = UDim.new(0, 8)
+boxCorner.Parent = textBox
+
+-- ปุ่มเล่นเพลง (ธีมมืด)
+local button = Instance.new("TextButton")
+button.Size = UDim2.new(0, 260, 0, 40)
+button.Position = UDim2.new(0.5, -130, 0, 110)
+button.Text = "▶ เล่นเพลง"
+button.TextColor3 = Color3.fromRGB(255, 255, 255)
+button.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+button.TextSize = 14
+button.Font = Enum.Font.GothamBold
+button.Parent = frame
+
+local btnCorner = Instance.new("UICorner")
+btnCorner.CornerRadius = UDim.new(0, 8)
+btnCorner.Parent = button
+
+-- ระบบเปลี่ยนสีขอบเรืองแสงเป็นสายรุ้งวิ่งตามคลิป
+task.spawn(function()
+    while screenGui and screenGui.Parent do
+        for i = 0, 1, 0.005 do
+            if not screenGui or not screenGui.Parent then break end
+            stroke.Color = Color3.fromHSV(i, 1, 1)
+            task.wait(0.03)
+        end
+    end
+end)
+
+-- ระบบส่งเพลง
+button.MouseButton1Click:Connect(function()
+    local songId = textBox.Text
+    if songId ~= "" and songId ~= "ช่องใส่เพลง" then
+        local args = {"ToolMusicText", songId, [4] = true}
+        game:GetService("ReplicatedStorage"):WaitForChild("RE"):WaitForChild("PlayerToolEvent"):FireServer(unpack(args))
+        button.Text = "✅ ส่งเพลงสำเร็จ!"
+        task.wait(1.5)
+        button.Text = "▶ เล่นเพลง"
+    else
+        textBox.PlaceholderText = "โปรดใส่ ID ก่อน!"
+    end
+end)
+
+print("🌈 Rainbow Border UI Loaded!")
