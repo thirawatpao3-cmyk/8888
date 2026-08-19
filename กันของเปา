@@ -1,0 +1,127 @@
+-- สร้าง UI หน้าต่างเปลี่ยนเพลง Tool (ปุ่มเปล่าๆ ขอบขาว-ดำวิบวับ + ล็อคคำช่องใส่เพลง)
+local player = game.Players.LocalPlayer
+local playerGui = player:WaitForChild("PlayerGui")
+
+if playerGui:FindFirstChild("ToolMusicUI_BWFlasher") then
+    playerGui.ToolMusicUI_BWFlasher:Destroy()
+end
+
+local screenGui = Instance.new("ScreenGui")
+screenGui.Name = "ToolMusicUI_BWFlasher"
+screenGui.Parent = playerGui
+
+local frame = Instance.new("Frame")
+frame.Size = UDim2.new(0, 260, 0, 150)
+frame.Position = UDim2.new(0.5, -130, 0.4, -75)
+frame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+frame.BorderSizePixel = 0
+frame.Active = true
+frame.Draggable = true
+frame.Parent = screenGui
+
+-- ขอบเรืองแสงวิบวับ ขาว-ดำ
+local stroke = Instance.new("UIStroke")
+stroke.Thickness = 3
+stroke.Parent = frame
+
+local corner = Instance.new("UICorner")
+corner.CornerRadius = UDim.new(0, 10)
+corner.Parent = frame
+
+local title = Instance.new("TextLabel")
+title.Size = UDim2.new(1, 0, 0, 35)
+title.BackgroundTransparency = 1
+title.Text = "🎵 กันเจาะเปาสุดหล่อ"
+title.TextColor3 = Color3.fromRGB(255, 255, 255)
+title.TextSize = 14
+title.Font = Enum.Font.GothamBold
+title.Parent = frame
+
+-- ช่องใส่ ID เพลง (พร้อมระบบล็อคคำ)
+local textBox = Instance.new("TextBox")
+textBox.Size = UDim2.new(0, 220, 0, 35)
+textBox.Position = UDim2.new(0.5, -110, 0, 45)
+textBox.Text = "ช่องใส่เพลง: "
+textBox.TextColor3 = Color3.fromRGB(255, 255, 255)
+textBox.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+textBox.TextSize = 14
+textBox.Font = Enum.Font.Gotham
+textBox.Parent = frame
+
+local boxCorner = Instance.new("UICorner")
+boxCorner.CornerRadius = UDim.new(0, 6)
+boxCorner.Parent = textBox
+
+-- ระบบป้องกันการลบคำว่า "ช่องใส่เพลง: "
+textBox:GetPropertyChangedSignal("Text"):Connect(function()
+    if not string.find(textBox.Text, "ช่องใส่เพลง: ") then
+        textBox.Text = "ช่องใส่เพลง: "
+    end
+end)
+
+local button = Instance.new("TextButton")
+button.Size = UDim2.new(0, 220, 0, 35)
+button.Position = UDim2.new(0.5, -110, 0, 88)
+button.Text = "🎶 เปิดเพลงใน Tool"
+button.TextColor3 = Color3.fromRGB(255, 255, 255)
+button.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+button.TextSize = 14
+button.Font = Enum.Font.GothamBold
+button.Parent = frame
+
+local btnCorner = Instance.new("UICorner")
+btnCorner.CornerRadius = UDim.new(0, 6)
+btnCorner.Parent = button
+
+-- ปุ่ม Toggle (มีปุ่มเหมือนเดิม แต่เอาตัวอักษรออก)
+local toggleBtn = Instance.new("TextButton")
+toggleBtn.Size = UDim2.new(0, 45, 0, 45)
+toggleBtn.Position = UDim2.new(0, 50, 0, 50)
+toggleBtn.Text = "" -- เอาตัวอักษรออก
+toggleBtn.Active = true
+toggleBtn.Draggable = true
+toggleBtn.Parent = screenGui
+
+local toggleCorner = Instance.new("UICorner")
+toggleCorner.CornerRadius = UDim.new(1, 0)
+toggleCorner.Parent = toggleBtn
+
+-- ระบบขอบวิบวับ ขาว-ดำ และปุ่มวิบวับสลับขาวดำ
+task.spawn(function()
+    while screenGui and screenGui.Parent do
+        -- สีขาว
+        stroke.Color = Color3.fromRGB(255, 255, 255)
+        toggleBtn.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+        task.wait(0.2)
+        -- สีดำ
+        stroke.Color = Color3.fromRGB(0, 0, 0)
+        toggleBtn.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+        task.wait(0.2)
+    end
+end)
+
+local isOpen = true
+toggleBtn.MouseButton1Click:Connect(function()
+    isOpen = not isOpen
+    frame.Visible = isOpen
+end)
+
+toggleBtn.MouseButton2Click:Connect(function()
+    screenGui:Destroy()
+end)
+
+-- ระบบส่งเพลง
+button.MouseButton1Click:Connect(function()
+    local rawText = textBox.Text
+    local songId = string.gsub(rawText, "ช่องใส่เพลง: ", "")
+    
+    if songId ~= "" and songId ~= "ช่องใส่เพลง: " then
+        local args = {"ToolMusicText", songId, [4] = true}
+        game:GetService("ReplicatedStorage"):WaitForChild("RE"):WaitForChild("PlayerToolEvent"):FireServer(unpack(args))
+        button.Text = "✅ ส่งเพลงสำเร็จ!"
+        task.wait(1.5)
+        button.Text = "🎶 เปิดเพลงใน Tool"
+    end
+end)
+
+print("🖤🤍 Black & White Flashing UI Loaded!")
