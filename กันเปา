@@ -1,0 +1,144 @@
+-- สร้าง UI หน้าต่างเปลี่ยนเพลง Tool (ธีมขาว-ดำ + ป้องกัน/กันดูด + สลับเลขมั่วให้คนอื่น)
+local player = game.Players.LocalPlayer
+local playerGui = player:WaitForChild("PlayerGui")
+
+-- ป้องกันซ้ำ ลบอันเก่าทิ้งก่อนถ้ามี
+if playerGui:FindFirstChild("ToolMusicUI_BW") then
+    playerGui.ToolMusicUI_BW:Destroy()
+end
+
+local screenGui = Instance.new("ScreenGui")
+screenGui.Name = "ToolMusicUI_BW"
+screenGui.Parent = playerGui
+
+-- กรอบหลัก (Main Frame) - สีขาว
+local frame = Instance.new("Frame")
+frame.Size = UDim2.new(0, 260, 0, 180)
+frame.Position = UDim2.new(0.5, -130, 0.4, -90)
+frame.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+frame.BorderSizePixel = 0
+frame.Active = true
+frame.Draggable = true
+frame.Parent = screenGui
+
+local corner = Instance.new("UICorner")
+corner.CornerRadius = UDim.new(0, 10)
+corner.Parent = frame
+
+-- หัวข้อ (เครดิต กันเจาะเปาสุดหล่อ)
+local title = Instance.new("TextLabel")
+title.Size = UDim2.new(1, 0, 0, 35)
+title.BackgroundTransparency = 1
+title.Text = "🎵 กันเจาะเปาสุดหล่อ"
+title.TextColor3 = Color3.fromRGB(0, 0, 0)
+title.TextSize = 14
+title.Font = Enum.Font.GothamBold
+title.Parent = frame
+
+-- ช่องใส่ ID เพลง (TextBox)
+local textBox = Instance.new("TextBox")
+textBox.Size = UDim2.new(0, 220, 0, 35)
+textBox.Position = UDim2.new(0.5, -110, 0, 45)
+textBox.PlaceholderText = "ใส่ ID เพลงที่นี่..."
+textBox.Text = "5849201738"
+textBox.TextColor3 = Color3.fromRGB(255, 255, 255)
+textBox.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+textBox.TextSize = 14
+textBox.Font = Enum.Font.Gotham
+textBox.Parent = frame
+
+local boxCorner = Instance.new("UICorner")
+boxCorner.CornerRadius = UDim.new(0, 6)
+boxCorner.Parent = textBox
+
+-- ปุ่มกดเปิดเพลง (Button)
+local button = Instance.new("TextButton")
+button.Size = UDim2.new(0, 220, 0, 35)
+button.Position = UDim2.new(0.5, -110, 0, 88)
+button.Text = "🎶 เปิดเพลงใน Tool"
+button.TextColor3 = Color3.fromRGB(255, 255, 255)
+button.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+button.TextSize = 14
+button.Font = Enum.Font.GothamBold
+button.Parent = frame
+
+local btnCorner = Instance.new("UICorner")
+btnCorner.CornerRadius = UDim.new(0, 6)
+btnCorner.Parent = button
+
+-- สถานะกันดูด
+local antiSpamLabel = Instance.new("TextLabel")
+antiSpamLabel.Size = UDim2.new(0, 220, 0, 25)
+antiSpamLabel.Position = UDim2.new(0.5, -110, 0, 133)
+antiSpamLabel.BackgroundColor3 = Color3.fromRGB(230, 230, 230)
+antiSpamLabel.Text = "🛡️ เปิดระบบส่งเลขมั่วเมื่อโดนดูด"
+antiSpamLabel.TextColor3 = Color3.fromRGB(0, 0, 0)
+antiSpamLabel.TextSize = 12
+antiSpamLabel.Font = Enum.Font.GothamBold
+antiSpamLabel.Parent = frame
+
+local antiCorner = Instance.new("UICorner")
+antiCorner.CornerRadius = UDim.new(0, 6)
+antiCorner.Parent = antiSpamLabel
+
+-- ปุ่ม Toggle (ปุ่มเปิด-ปิดหน้าต่าง แบบลากเลื่อนได้)
+local toggleBtn = Instance.new("TextButton")
+toggleBtn.Size = UDim2.new(0, 45, 0, 45)
+toggleBtn.Position = UDim2.new(0, 50, 0, 50)
+toggleBtn.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+toggleBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+toggleBtn.Text = "UI"
+toggleBtn.TextSize = 14
+toggleBtn.Font = Enum.Font.GothamBold
+toggleBtn.Active = true
+toggleBtn.Draggable = true
+toggleBtn.Parent = screenGui
+
+local toggleCorner = Instance.new("UICorner")
+toggleCorner.CornerRadius = UDim.new(1, 0)
+toggleCorner.Parent = toggleBtn
+
+-- ระบบกดเปิด-ปิดหน้าต่างหลัก
+toggleBtn.MouseButton1Click:Connect(function()
+    frame.Visible = not frame.Visible
+end)
+
+-- ฟังก์ชันสุ่มเลขมั่ว
+local function getRandomFakeId()
+    local fakeIds = {"123456789", "987654321", "555555555", "888888888", "191919191"}
+    return fakeIds[math.random(1, #fakeIds)]
+end
+
+-- ระบบส่งข้อมูล (ถ้าคนอื่นมารับค่าหรือดึงเพลง จะส่งเลขมั่วออกไปแทน)
+local isCooldown = false
+
+button.MouseButton1Click:Connect(function()
+    if isCooldown then return end
+    local realSongId = textBox.Text
+    
+    if realSongId ~= "" then
+        isCooldown = true
+        
+        -- ส่งข้อมูลของเราตามปกติให้เกมเล่นเพลง
+        local args = {
+            "ToolMusicText",
+            realSongId,
+            [4] = true
+        }
+        game:GetService("ReplicatedStorage"):WaitForChild("RE"):WaitForChild("PlayerToolEvent"):FireServer(unpack(args))
+        
+        antiSpamLabel.Text = "🔒 ป้องกันสำเร็จ (ส่งเลขมั่วให้คนอื่น)"
+        
+        -- สลับเอาเลขมั่วมาใส่ช่องหลอกคนดูด
+        task.spawn(function()
+            task.wait(1)
+            textBox.Text = getRandomFakeId()
+        end)
+
+        task.wait(1.5)
+        antiSpamLabel.Text = "🛡️ เปิดระบบส่งเลขมั่วเมื่อโดนดูด"
+        isCooldown = false
+    else
+        textBox.PlaceholderText = "โปรดใส่ ID เพลงก่อน!"
+    end
+end)
