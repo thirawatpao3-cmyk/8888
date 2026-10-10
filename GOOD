@@ -1,0 +1,33 @@
+local Players = game:GetService("Players")
+local player = Players.LocalPlayer
+
+-- เพิ่มปุ่มเปิด/ปิดแช่แข็งตัวละคร
+MainTab:Toggle({
+    Title = "แช่แข็งตัวละคร",
+    Desc = "ล็อคตัวละครไม่ให้ขยับหรือปลิว",
+    Value = false,
+    Callback = function(state)
+        local character = player.Character
+        if not character then return end
+        
+        local humanoidRootPart = character:FindFirstChild("HumanoidRootPart")
+        if humanoidRootPart then
+            -- สลับสถานะ Anchored ของตัวละคร
+            humanoidRootPart.Anchored = state
+            
+            if state then
+                WindUI:Notify({
+                    Title = "สถานะ",
+                    Content = "แช่แข็งตัวละครแล้ว",
+                    Duration = 2
+                })
+            else
+                WindUI:Notify({
+                    Title = "สถานะ",
+                    Content = "ยกเลิกการแช่แข็งแล้ว",
+                    Duration = 2
+                })
+            end
+        end
+    end
+})
