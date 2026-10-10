@@ -1,0 +1,12 @@
+-- ตัวอย่างระบบเปิด-ปิด UI ด้วย 1 ฟังก์ชัน
+local uiElement = script.Parent:WaitForChild("MainUI") -- ระบุตำแหน่ง UI ของคุณ
+local isOpen = false
+
+local function toggleUI()
+    isOpen = not isOpen
+    uiElement.Visible = isOpen
+    print(isOpen and "เปิด UI แล้ว" : "ปิด UI แล้ว")
+end
+
+-- ตัวอย่างการเรียกใช้งานฟังก์ชัน
+toggleUI() -- สลับสถานะ (ถ้าปิดอยู่จะเปิด, ถ้าเปิดอยู่จะปิด)
